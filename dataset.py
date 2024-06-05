@@ -21,6 +21,7 @@ def load_figure_dataset(pth, n_clusters=3):
         root = tree.getroot()
         train_coords, test_coords = [], []
         train_lens, test_lens = [], []
+        coords = []
 
         for i, training_example in enumerate(root.findall('trainingExample')):
             len = 0
@@ -28,6 +29,7 @@ def load_figure_dataset(pth, n_clusters=3):
                 x = float(coord.get('x'))
                 y = float(coord.get('y'))
                 t = int(coord.get('t'))
+                coords.append((t, x, y))
                 if i % 2 == 0:
                     test_coords.append((t, x, y))
                 else:
@@ -47,13 +49,16 @@ def load_figure_dataset(pth, n_clusters=3):
         normalized_test = scaler.transform(sorted_test)
 
         kmeans = KMeans(n_clusters=n_clusters)
-        kmeans.fit(normalized_train)
-        train_clusters.append(np.array((kmeans.labels_+1)/n_clusters, dtype=float))
+        # print(np.concatenate((normalized_train, normalized_test)))
+        kmeans.fit(np.concatenate((normalized_train, normalized_test)))
+        train_labels = kmeans.labels_[:np.sum(train_lens)]
+        test_labels = kmeans.labels_[np.sum(train_lens):]
+
+        train_clusters.append(np.array(train_labels/(n_clusters-1), dtype=float))
         train_results.append(np.array(normalized_train))
         train_LENS.append(train_lens)
 
-        kmeans.fit(normalized_test)
-        test_clusters.append(np.array((kmeans.labels_+1)/n_clusters, dtype=float))
+        test_clusters.append(np.array(test_labels/(n_clusters-1), dtype=float))
         test_results.append(normalized_test)
         test_LENS.append(test_lens)
 

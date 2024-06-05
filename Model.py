@@ -5,19 +5,32 @@ import numpy as np
 from hmmlearn import hmm
 
 # 定义模型参数
-n_components = 12  # 隐状态的数量
+n_components = 16  # 隐状态的数量
 n_iter = 1000  # 训练的迭代次数
-model_lst = [hmm.GaussianHMM(n_components=n_components, covariance_type='full', n_iter=n_iter)
-          for _ in ['a', 'e', 'i', 'o', 'u']]
+
 # # 创建一个高斯HMM实例
 # model_A = hmm.GaussianHMM(n_components=n_components, covariance_type='full', n_iter=n_iter)
 # model_E = hmm.GaussianHMM(n_components=n_components, covariance_type='full', n_iter=n_iter)
-# # 初始化模型参数
-# # 你可以根据需要设置startprob_prior、transmat_prior等参数
-# # 这里我们简单地用随机初始化
-# # model.startprob_ = np.array([0.6, 0.4])
-# # model.transmat_ = np.array([[0.7, 0.3],
-# #                             [0.4, 0.6]])
+
+
+class HMModel:
+    def __init__(self, n_components=n_components, n_iter=n_iter):
+        self.n_components = n_components
+        self.n_iter = n_iter
+        self.model = hmm.GaussianHMM(n_components=n_components, covariance_type='full', n_iter=n_iter)
+
+    def Laplacian(self):
+        self.model.startprob_ = np.ones(self.n_components) / self.n_components
+        self.model.transmat_ = np.ones((self.n_components, self.n_components)) / self.n_components
+
+
+    def train(self, observation, observation_length):
+        self.model.fit(observation, observation_length)
+
+    def predict(self, observation):
+        score = self.model.score(observation)
+        return score
+
 
 if __name__ == '__main__':
     model_A = hmm.GaussianHMM(n_components=n_components, covariance_type='full', n_iter=n_iter)
